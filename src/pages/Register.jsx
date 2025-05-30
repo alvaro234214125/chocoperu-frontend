@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; 
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -9,6 +10,7 @@ function Register() {
   const [role, setRole] = useState('USER');
 
   const navigate = useNavigate();
+  const { login } = useAuth(); 
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -19,7 +21,9 @@ function Register() {
         password,
         role
       });
-      localStorage.setItem('token', res.data.token);
+
+      login(res.data.token);
+
       navigate('/');
     } catch (err) {
       alert('Registration failed');
@@ -29,13 +33,49 @@ function Register() {
   return (
     <form onSubmit={handleRegister}>
       <h2>Register</h2>
-      <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" />
-      <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
-      <select value={role} onChange={e => setRole(e.target.value)}>
-        <option value="USER">User</option>
-        <option value="ADMIN">Admin</option>
-      </select>
+      <input
+        value={username}
+        onChange={e => setUsername(e.target.value)}
+        placeholder="Username"
+        required
+      />
+      <input
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        placeholder="Email"
+        type="email"
+        required
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={e => setPassword(e.target.value)}
+        placeholder="Password"
+        required
+      />
+
+      <div>
+        <label>
+          <input
+            type="radio"
+            value="USER"
+            checked={role === 'USER'}
+            onChange={e => setRole(e.target.value)}
+          />
+          User
+        </label>
+
+        <label style={{ marginLeft: '1rem' }}>
+          <input
+            type="radio"
+            value="PROVIDER"
+            checked={role === 'PROVIDER'}
+            onChange={e => setRole(e.target.value)}
+          />
+          Provider
+        </label>
+      </div>
+
       <button type="submit">Register</button>
     </form>
   );

@@ -7,7 +7,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
@@ -29,16 +29,19 @@ export function AuthProvider({ children }) {
         } catch (error) {
           console.error('Error al obtener usuario:', error);
           setUser(null);
+          localStorage.removeItem('token');
         }
+      } else {
+        setUser(null);
       }
     };
 
     fetchUser();
   }, [token]);
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    setToken(token);
+  const login = (newToken) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
   };
 
   const logout = () => {
