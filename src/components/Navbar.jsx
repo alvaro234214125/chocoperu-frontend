@@ -1,15 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useCart } from '../context/CartContext';
+import { useState } from 'react';
 import { FaShoppingCart } from 'react-icons/fa';
+import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
 
 function Navbar() {
   const { user, logout } = useAuth();
+  const { cartItems } = useCart();
   const navigate = useNavigate();
-  const [cartCount, setCartCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
-
   const token = localStorage.getItem('token');
 
   const handleLogout = () => {
@@ -18,15 +18,15 @@ function Navbar() {
   };
 
   const goToProfile = async () => {
-    setShowDropdown(false)
+    setShowDropdown(false);
     try {
-      const response = await axios.get('http://localhost:8080/api/auth/me', {
+      const response = await fetch('http://localhost:8080/api/auth/me', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('Usuario actual:', response.data);
-      navigate('/profile', { state: { user: response.data } });
+      const data = await response.json();
+      navigate('/profile', { state: { user: data } });
     } catch (error) {
       console.error('Error al obtener datos del usuario', error);
     }
@@ -37,121 +37,101 @@ function Navbar() {
     navigate('/orders');
   };
 
-  useEffect(() => {
-    if (!user || !token) {
-      setCartCount(0);
-      return;
-    }
-
-    axios.get('http://localhost:8080/cart', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then(res => {
-      setCartCount(res.data.length);
-    })
-    .catch(() => setCartCount(0));
-  }, [user, token]);
-
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">
-          ChocoPerú
+    <nav className="bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        
+        <Link to="/" className="flex items-center gap-3 pr-10">
+          <img
+            src="/projects/chocoperu.webp"
+            alt="ChocoPerú Logo"
+            className="w-10 h-10 object-contain rounded-full"
+          />
+          <span className="text-2xl font-extrabold tracking-wide select-none">ChocoPerú</span>
         </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon" />
-        </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto align-items-center">
+        <div className="flex items-center gap-8 text-sm font-medium">
 
-            <li className="nav-item">
-              <Link className="nav-link" to="/">
-                Inicio
+          <Link
+            to="/"
+            className="hover:text-blue-200 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md px-3 py-2"
+          >
+            Inicio
+          </Link>
+          {user ? (
+            <>
+              <Link
+                to="/cart"
+                className="relative hover:text-blue-200 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md px-3 py-2 flex items-center"
+                aria-label="Carrito"
+              >
+                <FaShoppingCart className="w-5 h-5" />
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold shadow-md">
+                    {cartItems.length}
+                  </span>
+                )}
               </Link>
-            </li>
 
-            {user && (
-              <li className="nav-item position-relative mx-3">
-                <Link className="nav-link" to="/cart" title="Ver carrito">
-                  <FaShoppingCart size={20} />
-                  {cartCount > 0 && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: '-1px',
-                        right: '-6px',
-                        backgroundColor: '#dc3545',
-                        color: 'white',
-                        borderRadius: '50%',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                      }}
-                    >
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            )}
-
-            {user ? (
-              <li className="nav-item dropdown">
-                <span
-                  className="nav-link dropdown-toggle"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
+              <div className="relative">
+                <button
                   onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex items-center gap-1 hover:text-blue-200 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md px-3 py-2"
+                  aria-haspopup="true"
+                  aria-expanded={showDropdown}
                 >
                   Hola, <strong>{user.username}</strong>
-                </span>
-                <ul className={`dropdown-menu dropdown-menu-end ${showDropdown ? 'show' : ''}`}>
-                  <li>
-                    <button className="dropdown-item" onClick={goToProfile}>
+                  {showDropdown ? (
+                    <HiChevronUp className="w-5 h-5" />
+                  ) : (
+                    <HiChevronDown className="w-5 h-5" />
+                  )}
+                </button>
+
+                {showDropdown && (
+                  <div
+                    className="absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-lg shadow-lg border border-gray-200 z-40 overflow-hidden
+                    before:absolute before:-top-2 before:right-5 before:w-4 before:h-4 before:bg-white before:rotate-45 before:border-l before:border-t before:border-gray-200 before:border-t-gray-200 before:border-l-gray-200"
+                    style={{ position: 'absolute' }}
+                  >
+                    <button
+                      onClick={goToProfile}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100 transition font-medium"
+                    >
                       Mi cuenta
                     </button>
-                  </li>
-                  <li>
-                    <button className="dropdown-item" onClick={goToOrders}>
+                    <button
+                      onClick={goToOrders}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100 transition font-medium"
+                    >
                       Mis pedidos
                     </button>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <button className="dropdown-item text-danger" onClick={handleLogout}>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-5 py-3 text-red-600 hover:bg-red-50 transition font-medium"
+                    >
                       Cerrar sesión
                     </button>
-                  </li>
-                </ul>
-              </li>
-            ) : (
-              <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/login">
-                    Iniciar sesión
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register">
-                    Registrarse
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="hover:text-blue-200 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md px-3 py-2"
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                to="/register"
+                className="hover:text-blue-200 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-md px-3 py-2"
+              >
+                Registrarse
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

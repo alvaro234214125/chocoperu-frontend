@@ -4,30 +4,28 @@ import axios from 'axios';
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cartCount, setCartCount] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
   const token = localStorage.getItem('token');
 
-  const loadCartCount = () => {
+  const fetchCart = () => {
     if (!token) {
-      setCartCount(0);
+      setCartItems([]);
       return;
     }
 
     axios.get('http://localhost:8080/cart', {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => {
-      setCartCount(res.data.length);
-    })
-    .catch(() => setCartCount(0));
+    .then(res => setCartItems(res.data))
+    .catch(() => setCartItems([]));
   };
 
   useEffect(() => {
-    loadCartCount();
+    fetchCart();
   }, [token]);
 
   return (
-    <CartContext.Provider value={{ cartCount, loadCartCount }}>
+    <CartContext.Provider value={{ cartItems, setCartItems, fetchCart }}>
       {children}
     </CartContext.Provider>
   );
