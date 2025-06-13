@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 
 function OrderDetail() {
   const { id } = useParams();
@@ -13,43 +15,65 @@ function OrderDetail() {
     axios.get(`http://localhost:8080/orders/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    .then(res => setOrder(res.data))
-    .catch(err => {
-      console.error('Error al obtener el pedido:', err);
-      alert('No se pudo cargar el detalle del pedido.');
-    })
-    .finally(() => setLoading(false));
+      .then(res => setOrder(res.data))
+      .catch(err => {
+        console.error('Error al obtener el pedido:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo cargar el detalle del pedido.',
+        });
+      })
+      .finally(() => setLoading(false));
   }, [id, token]);
 
   const handlePayOrder = () => {
-    if (!window.confirm('¿Confirmas el pago de esta orden?')) return;
-
-    axios.post(`http://localhost:8080/orders/${id}/pay`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then(() => {
-      alert('Orden pagada con éxito');
-      window.location.reload();
-    })
-    .catch((error) => {
-      alert('Error al pagar la orden');
-      console.error(error);
+    Swal.fire({
+      title: '¿Confirmas el pago?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, pagar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.post(`http://localhost:8080/orders/${id}/pay`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then(() => {
+            toast.success('Orden pagada con éxito');
+            setTimeout(() => window.location.reload(), 1000);
+          })
+          .catch((error) => {
+            console.error(error);
+            toast.error('Error al pagar la orden');
+          });
+      }
     });
   };
 
   const handleCancelOrder = () => {
-    if (!window.confirm('¿Seguro que quieres cancelar este pedido?')) return;
-
-    axios.post(`http://localhost:8080/orders/${id}/cancel`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then(() => {
-      alert('Pedido cancelado correctamente');
-      window.location.reload();
-    })
-    .catch((error) => {
-      alert('Error al cancelar el pedido');
-      console.error(error);
+    Swal.fire({
+      title: '¿Cancelar pedido?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'Volver',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.post(`http://localhost:8080/orders/${id}/cancel`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then(() => {
+            toast.success('Pedido cancelado correctamente');
+            setTimeout(() => window.location.reload(), 1000);
+          })
+          .catch((error) => {
+            console.error(error);
+            toast.error('Error al cancelar el pedido');
+          });
+      }
     });
   };
 

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
@@ -18,14 +20,26 @@ function Cart() {
   }, [token]);
 
   const handleRemove = (id) => {
-    axios.delete(`http://localhost:8080/cart/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(() => {
-      const updatedItems = cartItems.filter(item => item.id !== id);
-      setCartItems(updatedItems);
-    })
-    .catch(() => alert('Error eliminando el item del carrito'));
+    Swal.fire({
+      title: '¿Eliminar producto?',
+      text: 'Esta acción eliminará el producto del carrito',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.delete(`http://localhost:8080/cart/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(() => {
+            const updatedItems = cartItems.filter(item => item.id !== id);
+            setCartItems(updatedItems);
+            toast.success('Producto eliminado del carrito');
+          })
+          .catch(() => toast.error('Error eliminando el producto'));
+      }
+    });
   };
 
   const updateQuantity = (itemId, newQuantity) => {
@@ -34,26 +48,38 @@ function Cart() {
     axios.put(`http://localhost:8080/cart/${itemId}?quantity=${newQuantity}`, null, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(() => {
-      const updatedItems = cartItems.map(item =>
-        item.id === itemId
-          ? { ...item, quantity: newQuantity, totalPrice: newQuantity * item.unitPrice }
-          : item
-      );
-      setCartItems(updatedItems);
-    })
-    .catch(() => alert('Error al actualizar la cantidad'));
+      .then(() => {
+        const updatedItems = cartItems.map(item =>
+          item.id === itemId
+            ? { ...item, quantity: newQuantity, totalPrice: newQuantity * item.unitPrice }
+            : item
+        );
+        setCartItems(updatedItems);
+        toast.success('Cantidad actualizada');
+      })
+      .catch(() => toast.error('Error al actualizar la cantidad'));
   };
 
   const handleCreateOrder = () => {
-    axios.post('http://localhost:8080/cart/checkout', null, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(() => {
-      alert('¡Pedido realizado con éxito!');
-      setCartItems([]);
-    })
-    .catch(() => alert('Error al crear la orden'));
+    Swal.fire({
+      title: '¿Finalizar pedido?',
+      text: 'Se creará una orden con los productos en el carrito',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, finalizar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.post('http://localhost:8080/cart/checkout', null, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(() => {
+            toast.success('¡Pedido realizado con éxito!');
+            setCartItems([]);
+          })
+          .catch(() => toast.error('Error al crear la orden'));
+      }
+    });
   };
 
   const totalCarrito = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);

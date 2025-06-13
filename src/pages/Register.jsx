@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 
 function Register() {
   const [username, setUsername] = useState('');
@@ -16,6 +18,7 @@ function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const res = await axios.post('http://localhost:8080/api/auth/register', {
         username,
@@ -25,9 +28,19 @@ function Register() {
       });
 
       login(res.data.token);
+      toast.success('¡Registro exitoso! Bienvenido/a 👋');
       navigate('/');
     } catch (err) {
-      alert('Registro fallido. Por favor, verifica los datos.');
+      console.error(err);
+
+      const message = err.response?.data?.message || 'Registro fallido. Verifica los datos ingresados.';
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al registrarse',
+        text: message,
+        confirmButtonColor: '#3085d6',
+      });
     } finally {
       setLoading(false);
     }

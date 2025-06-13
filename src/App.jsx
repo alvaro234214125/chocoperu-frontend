@@ -8,11 +8,14 @@ import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import MyOrders from './pages/MyOrders';
 import OrderDetail from './pages/OrderDetail';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
     <Router>
       <Navbar />
+       <ToastContainer position="bottom-right" autoClose={3000} />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -24,6 +27,7 @@ function App() {
         <Route path="/orders/:id" element={<OrderDetail />} />
       </Routes>
     </Router>
+    
   );
 }
 
