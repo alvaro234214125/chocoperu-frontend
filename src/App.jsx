@@ -8,6 +8,9 @@ import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import MyOrders from './pages/MyOrders';
 import OrderDetail from './pages/OrderDetail';
+import MyProducts from './pages/MyProducts';
+import CreateProduct from './pages/CreateProduct';
+import EditProduct from './pages/EditProduct';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -25,6 +28,9 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/orders" element={<MyOrders />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/my-products" element={<MyProducts />} />
+        <Route path="/create-product" element={<CreateProduct />} />
+        <Route path="/edit-product/:id" element={<EditProduct />} />
       </Routes>
     </Router>
     

@@ -120,7 +120,11 @@ function ProductDetails() {
 
         <div className="md:w-7/12 space-y-4">
           <h2 className="text-3xl font-semibold text-gray-800">{product.name}</h2>
-          <p><strong>Descripción:</strong> {product.description}</p>
+          <div className="text-gray-700">
+  <p className="font-medium">Descripción:</p>
+  <p className="whitespace-pre-line break-words max-w-full">{product.description}</p>
+</div>
+
           <p><strong>Precio:</strong> S/ {product.price.toFixed(2)}</p>
           <p><strong>Stock:</strong> {product.stock}</p>
           <p><strong>Categoría:</strong> {product.categoryName || 'N/A'}</p>

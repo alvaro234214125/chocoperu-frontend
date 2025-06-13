@@ -58,6 +58,7 @@ function Navbar() {
           >
             Inicio
           </Link>
+
           {user ? (
             <>
               <Link
@@ -100,12 +101,27 @@ function Navbar() {
                     >
                       Mi cuenta
                     </button>
+
                     <button
                       onClick={goToOrders}
                       className="w-full text-left px-5 py-3 hover:bg-gray-100 transition font-medium"
                     >
                       Mis pedidos
                     </button>
+
+                    {user.role === 'PROVIDER' && (
+                      <>
+                        <Link
+                          to="/my-products"
+                          onClick={() => setShowDropdown(false)}
+                          className="block text-left px-5 py-3 hover:bg-gray-100 transition font-medium"
+                        >
+                          Mis productos
+                        </Link>
+                        
+                      </>
+                    )}
+
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-5 py-3 text-red-600 hover:bg-red-50 transition font-medium"
